@@ -25,14 +25,10 @@ Module.register("MMM-RainRadar", {
 		legend: 1,
 		legendMin: 0, //set legend to 1 if you want legendMin to show
 		animate: 1,
-		//area: "IL",
-		//updateOnWarning: 1,
-		//updateInterval: 5 * 60 * 1000, // every five minutes check for alerts
 	},
 
 	start: function () {
 		self = this;
-		//this.scheduleUpdate(this.updateInterval);
 	},
 
 	getStyles: function () {
@@ -64,82 +60,6 @@ Module.register("MMM-RainRadar", {
 			return "Rain Viewer";
 		}
 	},
-
-	/* show or hide module (compliments)
-	 * Requests new data from openweather.org.
-	 * Calls processWeather on succesfull response.
-	 */
-	updateWarnings: function () {
-
-		var url = `https://api.weather.gov/alerts/active/area/${this.config.area}`;
-		var self = this;
-
-		fetch(url).then(
-			function (response) {
-				if (response.ok) {
-					return response.json();
-				}
-			}
-		).then(function (myJson) {
-			// console.log(JSON.stringify(myJson));
-			self.processWarning(myJson);
-		}
-		);
-	},
-
-	/* processWarning(data)
-	 * Uses the received data to set the various values.
-	 *
-	 * argument data object - Weather information received form openweather.org.
-	 */
-	processWarning: function (data) {
-
-		console.log(this.name + ": Inside Process");
-		if (!data) {
-			// Did not receive usable new data.
-			// Maybe this needs a better check?
-			return;
-		}
-
-		var self = this;
-
-		// features
-		var features = data.features;
-
-		// severity to pick and urgency not to pick
-		var severity_array = ['moderate', 'severe', 'extreme']
-		var urgency_array = ['unknown', 'past']
-
-		// any of them severe and current?
-		for (let index = 0; index < features.length; index++) {
-			const element = features[index];
-			if (severity_array.includes(element.properties.severity.toLowerCase()) &
-				urgency_array.indexOf(element.properties.urgency.toLowerCase() === -1)) {
-				// TODO - we techincally want flood related events only?
-				// if user checks snow then we also check for snow alerts
-				console.log(element.properties.event);
-				self.show();
-				return;
-			};
-		};
-		console.log(this.name + ": No Active Warnings! Suspending Self");
-		self.hide();
-	},
-
-	scheduleUpdate: function (delay) {
-		if (this.config.updateOnWarning) {
-			var nextLoad = this.config.updateInterval;
-			if (typeof delay !== "undefined" && delay >= 0) {
-				nextLoad = delay;
-			}
-
-			var self = this;
-			setInterval(function () {
-				self.updateWarnings();
-			}, nextLoad);
-		};
-	},
-
 
 	/////  Add this function to the modules you want to control with voice //////
 
